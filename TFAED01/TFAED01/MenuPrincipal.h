@@ -1,6 +1,8 @@
 #pragma once
 #include "FormPopUp.h"
-
+#include "CTabla.h"
+#include "HeapSort.h"
+#include <fstream>
 namespace TFAED01 {
 
 	using namespace System;
@@ -32,13 +34,18 @@ namespace TFAED01 {
 		System::Windows::Forms::ToolStripSeparator^  toolStripSeparator5;
 		System::Windows::Forms::OpenFileDialog^  openFileDialog1;
 
-		System::Windows::Forms::DataGridView^  dgvPrincipal;
 
+
+		System::Windows::Forms::DataGridView^  dgvPrincipal;
+	private: System::Windows::Forms::DataGridView^  dgvAux;
+	private: System::Windows::Forms::Splitter^  splitter1;
+
+	private: CTabla* tbl;
 	public:
 		MenuPrincipal(void)
 		{
 			InitializeComponent();
-			
+			tsbtnIndexar->Enabled = false; tsbtnFiltrar->Enabled = false; tsbtnOrdenar->Enabled = false;
 		}
 		~MenuPrincipal()
 		{
@@ -48,9 +55,85 @@ namespace TFAED01 {
 			}
 		}
 
-		void AñadirColumna(String ^name) {
+		void MarshalString(String ^ s, string& os) {
+			using namespace Runtime::InteropServices;
+			const char* chars =
+				(const char*)(Marshal::StringToHGlobalAnsi(s)).ToPointer();
+			os = chars;
+			Marshal::FreeHGlobal(IntPtr((void*)chars));
+		} //Convierte String^ a std::string
+
+		//Para dgvPrincipal
+		void AñadirColumna(String ^name, String^ tipo) {
+			//Para el DGV
 			int i = dgvPrincipal->ColumnCount;
 			dgvPrincipal->Columns->Add("Columna" + i.ToString(), name);
+			dgvPrincipal->Columns[i]->SortMode 
+				= DataGridViewColumnSortMode::NotSortable;
+			//Para nuestra clase Cols
+			string aux_nombre, aux_tipo;
+			MarshalString(name, aux_nombre); MarshalString(tipo, aux_tipo);
+			CCols* aux_col = new CCols(aux_nombre, aux_tipo); tbl->addCol(aux_col);
+			//nose si hay q borrar
+		}
+		//Para dgvAux
+		void AñadirColumna(String ^name) {
+			int i = dgvAux->ColumnCount;
+			dgvAux->Columns->Add("Columna" + i.ToString(), name);
+			dgvAux->Columns[i]->SortMode
+				= DataGridViewColumnSortMode::NotSortable;
+		}
+
+		void AñadirFila() {
+
+		}
+
+		bool IsItCorrect(String^ auxs, string tipo) {
+			if (tipo == "int") {
+				int number;
+				return Int32::TryParse(auxs, number);
+			} else if (tipo == "double") {
+				double fraccion;
+				return Double::TryParse(auxs, fraccion);
+			}
+		}
+
+		int LastRowIsComplete() {
+			try
+			{
+				string aux_nombre;
+				for (int i = 0; i < dgvPrincipal->ColumnCount; i++) {
+					MarshalString(dgvPrincipal->Columns[i]->HeaderText, aux_nombre);
+					if (tbl->getCol(aux_nombre)->getType() == "int") {
+						if (!IsItCorrect(dgvPrincipal[i, dgvPrincipal->RowCount - 1]->Value->ToString(), "int"))
+							return 0;
+					} else if (tbl->getCol(aux_nombre)->getType() == "double") {
+						if (!IsItCorrect(dgvPrincipal[i, dgvPrincipal->RowCount - 1]->Value->ToString(), "double"))
+							return 0;
+					} else { dgvPrincipal[i, dgvPrincipal->RowCount - 1]->Value->ToString(); }
+				} return 1;
+			}
+			catch (Exception ^ex) { return 0; }
+		}
+
+		void ShowOnAux(CTabla* grup) {
+			//Crear las columnas a mostrar
+			for (int idxg = 0; idxg < grup->getNcols(); idxg++)
+				AñadirColumna(dgvPrincipal->Columns[idxg]->HeaderText);
+			//Crear las filas a mostrar
+			string aux_nombre; int auxi;
+			for (int i = 0; i < grup->getNfilas(); i++)
+			{
+				dgvAux->Rows->Add(); //Añade nueva fila
+				for (int idxg = 0; idxg < grup->getNcols(); idxg++)
+				{
+					MarshalString(dgvPrincipal->Columns[idxg]->HeaderText, aux_nombre);
+					auxi = tbl->getFila(i)->getidx();
+					String ^name = gcnew String(tbl->getCol(aux_nombre)->getDato(auxi).c_str());
+					dgvAux[idxg, i]->Value = name; delete name;
+				}
+			}
+			
 		}
 
 #pragma region Windows Form Designer generated code
@@ -78,8 +161,11 @@ namespace TFAED01 {
 			this->saveFileDialog1 = (gcnew System::Windows::Forms::SaveFileDialog());
 			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->dgvPrincipal = (gcnew System::Windows::Forms::DataGridView());
+			this->dgvAux = (gcnew System::Windows::Forms::DataGridView());
+			this->splitter1 = (gcnew System::Windows::Forms::Splitter());
 			this->toolStrip1->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dgvPrincipal))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dgvAux))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// toolStrip1
@@ -148,6 +234,7 @@ namespace TFAED01 {
 			// tsbtnIndexar
 			// 
 			this->tsbtnIndexar->DisplayStyle = System::Windows::Forms::ToolStripItemDisplayStyle::Text;
+			this->tsbtnIndexar->Enabled = false;
 			this->tsbtnIndexar->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"tsbtnIndexar.Image")));
 			this->tsbtnIndexar->ImageTransparentColor = System::Drawing::Color::Magenta;
 			this->tsbtnIndexar->Name = L"tsbtnIndexar";
@@ -163,6 +250,7 @@ namespace TFAED01 {
 			// tsbtnFiltrar
 			// 
 			this->tsbtnFiltrar->DisplayStyle = System::Windows::Forms::ToolStripItemDisplayStyle::Text;
+			this->tsbtnFiltrar->Enabled = false;
 			this->tsbtnFiltrar->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"tsbtnFiltrar.Image")));
 			this->tsbtnFiltrar->ImageTransparentColor = System::Drawing::Color::Magenta;
 			this->tsbtnFiltrar->Name = L"tsbtnFiltrar";
@@ -178,6 +266,7 @@ namespace TFAED01 {
 			// tsbtnOrdenar
 			// 
 			this->tsbtnOrdenar->DisplayStyle = System::Windows::Forms::ToolStripItemDisplayStyle::Text;
+			this->tsbtnOrdenar->Enabled = false;
 			this->tsbtnOrdenar->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"tsbtnOrdenar.Image")));
 			this->tsbtnOrdenar->ImageTransparentColor = System::Drawing::Color::Magenta;
 			this->tsbtnOrdenar->Name = L"tsbtnOrdenar";
@@ -196,11 +285,35 @@ namespace TFAED01 {
 			// 
 			// dgvPrincipal
 			// 
+			this->dgvPrincipal->AllowUserToAddRows = false;
 			this->dgvPrincipal->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
-			this->dgvPrincipal->Location = System::Drawing::Point(0, 28);
+			this->dgvPrincipal->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->dgvPrincipal->Location = System::Drawing::Point(0, 25);
 			this->dgvPrincipal->Name = L"dgvPrincipal";
-			this->dgvPrincipal->Size = System::Drawing::Size(844, 482);
+			this->dgvPrincipal->Size = System::Drawing::Size(844, 485);
 			this->dgvPrincipal->TabIndex = 2;
+			this->dgvPrincipal->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &MenuPrincipal::dgvPrincipal_KeyPress);
+			// 
+			// dgvAux
+			// 
+			this->dgvAux->AllowUserToAddRows = false;
+			this->dgvAux->AllowUserToDeleteRows = false;
+			this->dgvAux->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->dgvAux->Dock = System::Windows::Forms::DockStyle::Right;
+			this->dgvAux->Location = System::Drawing::Point(778, 25);
+			this->dgvAux->Name = L"dgvAux";
+			this->dgvAux->ReadOnly = true;
+			this->dgvAux->Size = System::Drawing::Size(66, 485);
+			this->dgvAux->TabIndex = 4;
+			// 
+			// splitter1
+			// 
+			this->splitter1->Dock = System::Windows::Forms::DockStyle::Right;
+			this->splitter1->Location = System::Drawing::Point(775, 25);
+			this->splitter1->Name = L"splitter1";
+			this->splitter1->Size = System::Drawing::Size(3, 485);
+			this->splitter1->TabIndex = 5;
+			this->splitter1->TabStop = false;
 			// 
 			// MenuPrincipal
 			// 
@@ -209,6 +322,8 @@ namespace TFAED01 {
 			this->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(224)), static_cast<System::Int32>(static_cast<System::Byte>(224)),
 				static_cast<System::Int32>(static_cast<System::Byte>(224)));
 			this->ClientSize = System::Drawing::Size(844, 510);
+			this->Controls->Add(this->splitter1);
+			this->Controls->Add(this->dgvAux);
 			this->Controls->Add(this->dgvPrincipal);
 			this->Controls->Add(this->toolStrip1);
 			this->Name = L"MenuPrincipal";
@@ -216,6 +331,7 @@ namespace TFAED01 {
 			this->toolStrip1->ResumeLayout(false);
 			this->toolStrip1->PerformLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dgvPrincipal))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dgvAux))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -224,39 +340,124 @@ namespace TFAED01 {
 	private: System::Void tsbtnGuardarArch_Click(System::Object^  sender, System::EventArgs^  e) {
 		if (saveFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
 			//código aquí
-			MessageBox::Show(saveFileDialog1->FileName);
-			
+			string aux_arch, aux_last_col; 
+			MarshalString(saveFileDialog1->FileName->ToString(), aux_arch);
+			MarshalString(dgvPrincipal->Columns[dgvPrincipal->ColumnCount - 1]->HeaderText->ToString(), aux_last_col);
+			tbl->saveOnArch(aux_arch, aux_last_col);
 		}
+
 	}
 	private: System::Void tsbtnAbrirArch_Click(System::Object^  sender, System::EventArgs^  e) {
 		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
 			//código aquí
-			MessageBox::Show(openFileDialog1->FileName);
+			/*
+			string auxs; MarshalString(openFileDialog1->FileName->ToString(), auxs);
+			std::ifstream arch(auxs);
+			if (arch.is_open() == NULL)
+			{
+				MessageBox::Show(L"Ha ocurrido un error, intente nuevamente.", "Atención",
+					MessageBoxButtons::OK, MessageBoxIcon::Error);
+				_exit(0);
+			}
+
+			*/
 		}
 	}
 	private: System::Void tsbtnNuevaTabla_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
-		fpu->ComoAbrirPopUp(NuevaTabla); //fpu->ShowDialog(this);
+		fpu->ComoAbrirPopUp(NuevaTabla); tbl = new CTabla();
 		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 		{
+			dgvPrincipal->Rows->Clear(); dgvPrincipal->Columns->Clear();
 			for (int i = 0; i < fpu->dgvNuevaTabla->RowCount - 1; i++)
-				AñadirColumna(fpu->GetNombre(true, i));
+				AñadirColumna(fpu->GetNombre(false, i), fpu->GetNombre(true, i));
+			dgvPrincipal->Rows->Add(); 
+			tsbtnIndexar->Enabled = true; tsbtnFiltrar->Enabled = true; tsbtnOrdenar->Enabled = true;
 		}
 		delete fpu;
 	}
 	private: System::Void tsbtnIndexar_Click(System::Object^  sender, System::EventArgs^  e) {
+		FormPopUp ^fpu = gcnew FormPopUp();
+		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
+			fpu->comboBoxQColumna->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
+		fpu->Fill_comboBoxIndexar(); fpu->ComoAbrirPopUp(Indexar); fpu->ShowDialog(this);
+		//código aquí
+		//reupera datos
+		delete fpu;
 		//código aquí
 
 	}
 	private: System::Void tsbtnFiltrar_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
+		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
+			fpu->comboBoxQColumna->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
 		fpu->ComoAbrirPopUp(Filtrar); fpu->ShowDialog(this);
+		//código aquí
+		//reupera datos
 		delete fpu;
+		//código aquí
 	}
 	private: System::Void tsbtnOrdenar_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
-		fpu->ComoAbrirPopUp(Ordenar); fpu->ShowDialog(this);
-		delete fpu;
+		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
+			fpu->comboBoxQColumna->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
+		fpu->ComoAbrirPopUp(Ordenar); CTabla* tblaux = new CTabla();
+		//código aquí
+		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			dgvAux->Rows->Clear(); dgvAux->Columns->Clear(); tblaux = tbl;
+			string aux_nombre;
+			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
+			string aux_tipo = tbl->getCol(aux_nombre)->getType();
+
+			if (fpu->GetIndex() == 0) { //Ascendente
+				if (aux_tipo == "int") {
+					vector<int> aux;
+					for (auto e: tbl->getCol(aux_nombre)->getAllData())
+						aux.push_back(stoi(e));
+					maxheapSort(aux, aux.size(), tblaux);
+				}
+				else if (aux_tipo == "double") {
+					vector<double> aux;
+					for (auto e : tbl->getCol(aux_nombre)->getAllData())
+						aux.push_back(stod(e));
+					//maxheapSort(aux, aux.size(), tblaux);
+				}
+				//para string y char falta
+			} else if (fpu->GetIndex() == 1) { //Descendente
+				if (aux_tipo == "int") {
+					vector<int> aux;
+					for (auto e : tbl->getCol(aux_nombre)->getAllData())
+						aux.push_back(stoi(e));
+					minheapSort(aux, aux.size(), tblaux);
+				}
+				else if (aux_tipo == "double") {
+					vector<double> aux;
+					for (auto e : tbl->getCol(aux_nombre)->getAllData())
+						aux.push_back(stod(e));
+					//maxheapSort(aux, aux.size(), tblaux);
+				}
+				//para string y char falta
+			}
+		}
+		//Mostrar en la otra tabla
+		ShowOnAux(tblaux);
+		delete fpu, tblaux;
+	}
+	private: System::Void dgvPrincipal_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e) {		
+		if (LastRowIsComplete() == 1) {
+			dgvPrincipal->Rows[dgvPrincipal->RowCount - 1]->ReadOnly = true;
+			//Para nuestra clase Tabla
+			string aux_nombre, aux_dato; 
+			CTabla::CFila* aux_fila = tbl->addFila(); //Añade nueva fila
+			for (int idxg = 0; idxg < dgvPrincipal->ColumnCount; idxg++)
+			{
+				MarshalString(dgvPrincipal->Columns[idxg]->HeaderText->ToString(), aux_nombre);
+				MarshalString(dgvPrincipal[idxg, dgvPrincipal->RowCount - 1]->Value->ToString(), aux_dato);
+				aux_fila->add(aux_nombre, aux_dato); //grupo->AddValuor(auxs, idxg);
+			}
+			dgvPrincipal->Rows->Add(); //Añade nueva fila
+		}
 	}
 };
 }

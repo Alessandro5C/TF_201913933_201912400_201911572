@@ -1,5 +1,5 @@
 #pragma once
-enum Option { NuevaTabla, Filtrar, Ordenar };
+enum Option { NuevaTabla, Indexar, Filtrar, Ordenar };
 namespace TFAED01 {
 
 	using namespace System;
@@ -15,8 +15,6 @@ namespace TFAED01 {
 		System::ComponentModel::Container ^components;
 		System::Windows::Forms::Panel^  pnlNuevaTabla;
 		System::Windows::Forms::Panel^  pnlOrdenar;
-		System::Windows::Forms::DataGridViewTextBoxColumn^  ColName;
-		System::Windows::Forms::DataGridViewComboBoxColumn^  ColTipo;
 		System::Windows::Forms::Label^  lblOrdenCriterio;
 		System::Windows::Forms::Button^  btnCrearNuevaTabla;
 		System::Windows::Forms::Panel^  pnlFiltrar;
@@ -24,16 +22,30 @@ namespace TFAED01 {
 		System::Windows::Forms::TextBox^  tbxFiltroValor;
 		System::Windows::Forms::ComboBox^  comboBoxFiltroCriterio;
 		System::Windows::Forms::Label^  lblFiltroCriterio;
-		System::Windows::Forms::Button^  button1;
+		System::Windows::Forms::Button^  btnOrdenar;
 		System::Windows::Forms::ComboBox^  comboBoxOrdenar;
+
+
+		System::Windows::Forms::Panel^  pnlIndexar;
+		System::Windows::Forms::Button^  btnIndexar;
+		System::Windows::Forms::Panel^  pnlQColumna;
+	public: System::Windows::Forms::ComboBox^  comboBoxQColumna;
+	private:
+
+		System::Windows::Forms::Label^  lblQColumna;
+		System::Windows::Forms::ComboBox^  comboBoxAuxQColumna;
+		System::Windows::Forms::Label^  lblAuxQColumna;
+	private: System::Windows::Forms::DataGridViewTextBoxColumn^  ColName;
+	private: System::Windows::Forms::DataGridViewComboBoxColumn^  ColTipo;
+
+
+
 	public: System::Windows::Forms::DataGridView^  dgvNuevaTabla;
 	public:
 		FormPopUp(void)
 		{
 			InitializeComponent();
-			pnlNuevaTabla->SetBounds(3, 7, pnlNuevaTabla->Width, pnlNuevaTabla->Height);
-			pnlFiltrar->SetBounds(3, 7, pnlFiltrar->Width, pnlFiltrar->Height);
-			pnlOrdenar->SetBounds(3, 7, pnlOrdenar->Width, pnlOrdenar->Height);
+			pnlQColumna->SetBounds(3, 7, pnlQColumna->Width, pnlQColumna->Height);
 			ReturnToZero();
 		}
 		~FormPopUp()
@@ -46,31 +58,50 @@ namespace TFAED01 {
 
 		void ReturnToZero() {
 			pnlNuevaTabla->Visible = false; pnlNuevaTabla->Enabled = false;
+			pnlIndexar->Visible = false; pnlIndexar->Enabled = false;
 			pnlFiltrar->Visible = false; pnlFiltrar->Enabled = false;
 			pnlOrdenar->Visible = false; pnlOrdenar->Enabled = false;
+			pnlQColumna->Visible = false; pnlQColumna->Enabled = false;
 		}
 
 		void ComoAbrirPopUp(Option o) {
 			switch (o)
 			{
 			case NuevaTabla: FormPopUp::Height = pnlNuevaTabla->Height + 45;
-				pnlNuevaTabla->Visible = true; pnlNuevaTabla->Enabled = true; 
+				pnlNuevaTabla->Visible = true; pnlNuevaTabla->Enabled = true;
+				pnlNuevaTabla->SetBounds(3, 7, pnlNuevaTabla->Width, pnlNuevaTabla->Height);
 				this->Text = "Crear nueva"; break;
-			case Filtrar: FormPopUp::Height = pnlFiltrar->Height + 45; 
-				pnlFiltrar->Visible = true; pnlFiltrar->Enabled = true; 
+			case Indexar: FormPopUp::Height = pnlFiltrar->Height + 45 + 34;
+				pnlIndexar->Visible = true; pnlIndexar->Enabled = true;
+				pnlIndexar->SetBounds(3, 7 + 34,
+					pnlIndexar->Width, pnlIndexar->Height);
+				this->Text = "Indexar";  break;
+			case Filtrar: FormPopUp::Height = pnlFiltrar->Height + 45 + 34; 
+				pnlFiltrar->Visible = true; pnlFiltrar->Enabled = true;
+				pnlFiltrar->SetBounds(3, 7 + 34,
+					pnlFiltrar->Width, pnlFiltrar->Height);
 				this->Text = "Filtro";  break;
-			case Ordenar: FormPopUp::Height = pnlOrdenar->Height + 45; 
+			case Ordenar: FormPopUp::Height = pnlOrdenar->Height + 45 + 34; 
 				pnlOrdenar->Visible = true; pnlOrdenar->Enabled = true; 
+				pnlOrdenar->SetBounds(3, 7 + 34, 
+					pnlOrdenar->Width, pnlOrdenar->Height);
 				this->Text = "Ordenar"; break;
-			default:
-				break;
-			}
+			} if (o != NuevaTabla) { pnlQColumna->Visible = true; pnlQColumna->Enabled = true; }
 		}
 
-		String^ GetNombre(bool nombre, int fila) {
-			if (nombre)
-				return dgvNuevaTabla[0, fila]->Value->ToString();
-			//return dgvNuevaTabla[1, fila]->Value->ToString();
+		void Fill_comboBoxIndexar() {
+			for (int i = 0; i < comboBoxQColumna->Items->Count; i++)
+				comboBoxAuxQColumna->Items->Add(comboBoxQColumna->Items[i]);
+		}
+
+		String^ GetNombre(bool tipo, int fila) {
+			if (tipo)
+				return dgvNuevaTabla[1, fila]->Value->ToString();
+			return dgvNuevaTabla[0, fila]->Value->ToString();
+		}
+
+		int GetIndex() {
+			return comboBoxOrdenar->SelectedIndex;
 		}
 
 #pragma region Windows Form Designer generated code
@@ -82,11 +113,9 @@ namespace TFAED01 {
 		{
 			this->pnlNuevaTabla = (gcnew System::Windows::Forms::Panel());
 			this->dgvNuevaTabla = (gcnew System::Windows::Forms::DataGridView());
-			this->ColName = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->ColTipo = (gcnew System::Windows::Forms::DataGridViewComboBoxColumn());
 			this->btnCrearNuevaTabla = (gcnew System::Windows::Forms::Button());
 			this->pnlOrdenar = (gcnew System::Windows::Forms::Panel());
-			this->button1 = (gcnew System::Windows::Forms::Button());
+			this->btnOrdenar = (gcnew System::Windows::Forms::Button());
 			this->comboBoxOrdenar = (gcnew System::Windows::Forms::ComboBox());
 			this->lblOrdenCriterio = (gcnew System::Windows::Forms::Label());
 			this->pnlFiltrar = (gcnew System::Windows::Forms::Panel());
@@ -94,10 +123,21 @@ namespace TFAED01 {
 			this->tbxFiltroValor = (gcnew System::Windows::Forms::TextBox());
 			this->comboBoxFiltroCriterio = (gcnew System::Windows::Forms::ComboBox());
 			this->lblFiltroCriterio = (gcnew System::Windows::Forms::Label());
+			this->pnlIndexar = (gcnew System::Windows::Forms::Panel());
+			this->comboBoxAuxQColumna = (gcnew System::Windows::Forms::ComboBox());
+			this->lblAuxQColumna = (gcnew System::Windows::Forms::Label());
+			this->btnIndexar = (gcnew System::Windows::Forms::Button());
+			this->pnlQColumna = (gcnew System::Windows::Forms::Panel());
+			this->comboBoxQColumna = (gcnew System::Windows::Forms::ComboBox());
+			this->lblQColumna = (gcnew System::Windows::Forms::Label());
+			this->ColName = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->ColTipo = (gcnew System::Windows::Forms::DataGridViewComboBoxColumn());
 			this->pnlNuevaTabla->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dgvNuevaTabla))->BeginInit();
 			this->pnlOrdenar->SuspendLayout();
 			this->pnlFiltrar->SuspendLayout();
+			this->pnlIndexar->SuspendLayout();
+			this->pnlQColumna->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// pnlNuevaTabla
@@ -121,19 +161,6 @@ namespace TFAED01 {
 			this->dgvNuevaTabla->Size = System::Drawing::Size(217, 146);
 			this->dgvNuevaTabla->TabIndex = 0;
 			// 
-			// ColName
-			// 
-			this->ColName->HeaderText = L"Nombre de la columna";
-			this->ColName->Name = L"ColName";
-			this->ColName->Width = 85;
-			// 
-			// ColTipo
-			// 
-			this->ColTipo->HeaderText = L"Tipo de dato de la columna";
-			this->ColTipo->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"int ", L"float", L"char" });
-			this->ColTipo->Name = L"ColTipo";
-			this->ColTipo->Width = 70;
-			// 
 			// btnCrearNuevaTabla
 			// 
 			this->btnCrearNuevaTabla->Location = System::Drawing::Point(77, 155);
@@ -146,7 +173,7 @@ namespace TFAED01 {
 			// 
 			// pnlOrdenar
 			// 
-			this->pnlOrdenar->Controls->Add(this->button1);
+			this->pnlOrdenar->Controls->Add(this->btnOrdenar);
 			this->pnlOrdenar->Controls->Add(this->comboBoxOrdenar);
 			this->pnlOrdenar->Controls->Add(this->lblOrdenCriterio);
 			this->pnlOrdenar->Location = System::Drawing::Point(3, 288);
@@ -154,22 +181,21 @@ namespace TFAED01 {
 			this->pnlOrdenar->Size = System::Drawing::Size(226, 85);
 			this->pnlOrdenar->TabIndex = 1;
 			// 
-			// button1
+			// btnOrdenar
 			// 
-			this->button1->Location = System::Drawing::Point(77, 52);
-			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(75, 23);
-			this->button1->TabIndex = 9;
-			this->button1->Text = L"Filtrar datos";
-			this->button1->UseVisualStyleBackColor = true;
+			this->btnOrdenar->Location = System::Drawing::Point(77, 52);
+			this->btnOrdenar->Name = L"btnOrdenar";
+			this->btnOrdenar->Size = System::Drawing::Size(75, 23);
+			this->btnOrdenar->TabIndex = 9;
+			this->btnOrdenar->Text = L"Ordenar";
+			this->btnOrdenar->UseVisualStyleBackColor = true;
+			this->btnOrdenar->Click += gcnew System::EventHandler(this, &FormPopUp::btnOrdenar_Click);
 			// 
 			// comboBoxOrdenar
 			// 
+			this->comboBoxOrdenar->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBoxOrdenar->FormattingEnabled = true;
-			this->comboBoxOrdenar->Items->AddRange(gcnew cli::array< System::Object^  >(4) {
-				L"Contiene a ...", L"No contiene a ...",
-					L"Comienza con ...", L"Finaliza con ..."
-			});
+			this->comboBoxOrdenar->Items->AddRange(gcnew cli::array< System::Object^  >(2) { L"Ascendente", L"Descendente" });
 			this->comboBoxOrdenar->Location = System::Drawing::Point(6, 25);
 			this->comboBoxOrdenar->Name = L"comboBoxOrdenar";
 			this->comboBoxOrdenar->Size = System::Drawing::Size(217, 21);
@@ -213,6 +239,7 @@ namespace TFAED01 {
 			// 
 			// comboBoxFiltroCriterio
 			// 
+			this->comboBoxFiltroCriterio->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBoxFiltroCriterio->FormattingEnabled = true;
 			this->comboBoxFiltroCriterio->Items->AddRange(gcnew cli::array< System::Object^  >(4) {
 				L"Contiene a ...", L"No contiene a ...",
@@ -232,6 +259,84 @@ namespace TFAED01 {
 			this->lblFiltroCriterio->TabIndex = 2;
 			this->lblFiltroCriterio->Text = L"Criterio de filtración:";
 			// 
+			// pnlIndexar
+			// 
+			this->pnlIndexar->Controls->Add(this->comboBoxAuxQColumna);
+			this->pnlIndexar->Controls->Add(this->lblAuxQColumna);
+			this->pnlIndexar->Controls->Add(this->btnIndexar);
+			this->pnlIndexar->Location = System::Drawing::Point(3, 379);
+			this->pnlIndexar->Name = L"pnlIndexar";
+			this->pnlIndexar->Size = System::Drawing::Size(226, 72);
+			this->pnlIndexar->TabIndex = 10;
+			// 
+			// comboBoxAuxQColumna
+			// 
+			this->comboBoxAuxQColumna->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->comboBoxAuxQColumna->FormattingEnabled = true;
+			this->comboBoxAuxQColumna->Items->AddRange(gcnew cli::array< System::Object^  >(1) { L"Ninguna" });
+			this->comboBoxAuxQColumna->Location = System::Drawing::Point(84, 8);
+			this->comboBoxAuxQColumna->Name = L"comboBoxAuxQColumna";
+			this->comboBoxAuxQColumna->Size = System::Drawing::Size(139, 21);
+			this->comboBoxAuxQColumna->TabIndex = 10;
+			// 
+			// lblAuxQColumna
+			// 
+			this->lblAuxQColumna->AutoSize = true;
+			this->lblAuxQColumna->Location = System::Drawing::Point(27, 11);
+			this->lblAuxQColumna->Name = L"lblAuxQColumna";
+			this->lblAuxQColumna->Size = System::Drawing::Size(51, 13);
+			this->lblAuxQColumna->TabIndex = 10;
+			this->lblAuxQColumna->Text = L"Columna:";
+			// 
+			// btnIndexar
+			// 
+			this->btnIndexar->Location = System::Drawing::Point(77, 37);
+			this->btnIndexar->Name = L"btnIndexar";
+			this->btnIndexar->Size = System::Drawing::Size(75, 23);
+			this->btnIndexar->TabIndex = 9;
+			this->btnIndexar->Text = L"Indexar";
+			this->btnIndexar->UseVisualStyleBackColor = true;
+			// 
+			// pnlQColumna
+			// 
+			this->pnlQColumna->Controls->Add(this->comboBoxQColumna);
+			this->pnlQColumna->Controls->Add(this->lblQColumna);
+			this->pnlQColumna->Location = System::Drawing::Point(3, 457);
+			this->pnlQColumna->Name = L"pnlQColumna";
+			this->pnlQColumna->Size = System::Drawing::Size(226, 34);
+			this->pnlQColumna->TabIndex = 10;
+			// 
+			// comboBoxQColumna
+			// 
+			this->comboBoxQColumna->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->comboBoxQColumna->FormattingEnabled = true;
+			this->comboBoxQColumna->Location = System::Drawing::Point(84, 6);
+			this->comboBoxQColumna->Name = L"comboBoxQColumna";
+			this->comboBoxQColumna->Size = System::Drawing::Size(139, 21);
+			this->comboBoxQColumna->TabIndex = 9;
+			// 
+			// lblQColumna
+			// 
+			this->lblQColumna->AutoSize = true;
+			this->lblQColumna->Location = System::Drawing::Point(27, 9);
+			this->lblQColumna->Name = L"lblQColumna";
+			this->lblQColumna->Size = System::Drawing::Size(51, 13);
+			this->lblQColumna->TabIndex = 9;
+			this->lblQColumna->Text = L"Columna:";
+			// 
+			// ColName
+			// 
+			this->ColName->HeaderText = L"Nombre de la columna";
+			this->ColName->Name = L"ColName";
+			this->ColName->Width = 85;
+			// 
+			// ColTipo
+			// 
+			this->ColTipo->HeaderText = L"Tipo de dato de la columna";
+			this->ColTipo->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"int", L"double", L"string" });
+			this->ColTipo->Name = L"ColTipo";
+			this->ColTipo->Width = 70;
+			// 
 			// FormPopUp
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -239,7 +344,9 @@ namespace TFAED01 {
 			this->AutoSizeMode = System::Windows::Forms::AutoSizeMode::GrowAndShrink;
 			this->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(224)), static_cast<System::Int32>(static_cast<System::Byte>(224)),
 				static_cast<System::Int32>(static_cast<System::Byte>(224)));
-			this->ClientSize = System::Drawing::Size(234, 379);
+			this->ClientSize = System::Drawing::Size(234, 496);
+			this->Controls->Add(this->pnlQColumna);
+			this->Controls->Add(this->pnlIndexar);
 			this->Controls->Add(this->pnlFiltrar);
 			this->Controls->Add(this->pnlOrdenar);
 			this->Controls->Add(this->pnlNuevaTabla);
@@ -254,11 +361,32 @@ namespace TFAED01 {
 			this->pnlOrdenar->PerformLayout();
 			this->pnlFiltrar->ResumeLayout(false);
 			this->pnlFiltrar->PerformLayout();
+			this->pnlIndexar->ResumeLayout(false);
+			this->pnlIndexar->PerformLayout();
+			this->pnlQColumna->ResumeLayout(false);
+			this->pnlQColumna->PerformLayout();
 			this->ResumeLayout(false);
 
 		}
 #pragma endregion
 	private: System::Void btnCrearNuevaTabla_Click(System::Object^  sender, System::EventArgs^  e) {
+		try {
+			for (int i = 0; i < dgvNuevaTabla->RowCount - 1; i++) {
+				dgvNuevaTabla[0, i]->Value->ToString();
+				dgvNuevaTabla[1, i]->Value->ToString();
+			}
+			dgvNuevaTabla->Sort(dgvNuevaTabla->Columns[0], ListSortDirection::Ascending);
+			if (dgvNuevaTabla->RowCount > 1)
+				this->DialogResult = System::Windows::Forms::DialogResult::OK;
+		}
+		catch (Exception ^ex)
+		{
+			MessageBox::Show("Complete todos los cuadros faltantes." 
+				+ "\n*La ultima fila puede estar vacía.");
+		}
+	}
+
+	private: System::Void btnOrdenar_Click(System::Object^  sender, System::EventArgs^  e) {
 		this->DialogResult = System::Windows::Forms::DialogResult::OK;
 	}
 };

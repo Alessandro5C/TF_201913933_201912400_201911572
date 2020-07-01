@@ -92,7 +92,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies />
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>NotSet</SubSystem>
       <EntryPointSymbol>main</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
@@ -136,9 +136,12 @@
     <ClCompile Include="MenuPrincipal.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CCols.h" />
+    <ClInclude Include="CTabla.h" />
     <ClInclude Include="FormPopUp.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="HeapSort.h" />
     <ClInclude Include="MenuPrincipal.h">
       <FileType>CppForm</FileType>
     </ClInclude>
