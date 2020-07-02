@@ -2,6 +2,7 @@
 #include "FormPopUp.h"
 #include "CTabla.h"
 #include "HeapSort.h"
+#include "Filtros.h"
 #include <fstream>
 namespace TFAED01 {
 
@@ -39,6 +40,9 @@ namespace TFAED01 {
 		System::Windows::Forms::DataGridView^  dgvPrincipal;
 	private: System::Windows::Forms::DataGridView^  dgvAux;
 	private: System::Windows::Forms::Splitter^  splitter1;
+	private: System::Windows::Forms::ToolStripButton^  tsbtnBuscar;
+
+
 
 	private: CTabla* tbl;
 	public:
@@ -122,18 +126,15 @@ namespace TFAED01 {
 				AñadirColumna(dgvPrincipal->Columns[idxg]->HeaderText);
 			//Crear las filas a mostrar
 			string aux_nombre; int auxi;
-			for (int i = 0; i < grup->getNfilas(); i++)
-			{
+			for (int i = 0; i < grup->getNfilas(); i++) {
 				dgvAux->Rows->Add(); //Añade nueva fila
-				for (int idxg = 0; idxg < grup->getNcols(); idxg++)
-				{
+				for (int idxg = 0; idxg < grup->getNcols(); idxg++) {
 					MarshalString(dgvPrincipal->Columns[idxg]->HeaderText, aux_nombre);
 					auxi = tbl->getFila(i)->getidx();
 					String ^name = gcnew String(tbl->getCol(aux_nombre)->getDato(auxi).c_str());
 					dgvAux[idxg, i]->Value = name; delete name;
 				}
 			}
-			
 		}
 
 #pragma region Windows Form Designer generated code
@@ -158,6 +159,7 @@ namespace TFAED01 {
 			this->toolStripSeparator4 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->tsbtnOrdenar = (gcnew System::Windows::Forms::ToolStripButton());
 			this->toolStripSeparator5 = (gcnew System::Windows::Forms::ToolStripSeparator());
+			this->tsbtnBuscar = (gcnew System::Windows::Forms::ToolStripButton());
 			this->saveFileDialog1 = (gcnew System::Windows::Forms::SaveFileDialog());
 			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->dgvPrincipal = (gcnew System::Windows::Forms::DataGridView());
@@ -170,10 +172,10 @@ namespace TFAED01 {
 			// 
 			// toolStrip1
 			// 
-			this->toolStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(10) {
+			this->toolStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(11) {
 				this->toolStripSplitButton1,
 					this->toolStripButton7, this->toolStripSeparator1, this->toolStripSeparator2, this->tsbtnIndexar, this->toolStripSeparator3,
-					this->tsbtnFiltrar, this->toolStripSeparator4, this->tsbtnOrdenar, this->toolStripSeparator5
+					this->tsbtnFiltrar, this->toolStripSeparator4, this->tsbtnOrdenar, this->toolStripSeparator5, this->tsbtnBuscar
 			});
 			this->toolStrip1->Location = System::Drawing::Point(0, 0);
 			this->toolStrip1->Name = L"toolStrip1";
@@ -279,6 +281,17 @@ namespace TFAED01 {
 			this->toolStripSeparator5->Name = L"toolStripSeparator5";
 			this->toolStripSeparator5->Size = System::Drawing::Size(6, 25);
 			// 
+			// tsbtnBuscar
+			// 
+			this->tsbtnBuscar->Alignment = System::Windows::Forms::ToolStripItemAlignment::Right;
+			this->tsbtnBuscar->DisplayStyle = System::Windows::Forms::ToolStripItemDisplayStyle::Text;
+			this->tsbtnBuscar->Image = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"tsbtnBuscar.Image")));
+			this->tsbtnBuscar->ImageTransparentColor = System::Drawing::Color::Magenta;
+			this->tsbtnBuscar->Name = L"tsbtnBuscar";
+			this->tsbtnBuscar->Size = System::Drawing::Size(62, 22);
+			this->tsbtnBuscar->Text = L"Buscar en";
+			this->tsbtnBuscar->Click += gcnew System::EventHandler(this, &MenuPrincipal::tsbtnBuscar_Click);
+			// 
 			// openFileDialog1
 			// 
 			this->openFileDialog1->FileName = L"openFileDialog1";
@@ -347,6 +360,7 @@ namespace TFAED01 {
 		}
 
 	}
+
 	private: System::Void tsbtnAbrirArch_Click(System::Object^  sender, System::EventArgs^  e) {
 		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
 			//código aquí
@@ -380,23 +394,81 @@ namespace TFAED01 {
 		FormPopUp ^fpu = gcnew FormPopUp();
 		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
 			fpu->comboBoxQColumna->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
-		fpu->Fill_comboBoxIndexar(); fpu->ComoAbrirPopUp(Indexar); fpu->ShowDialog(this);
+		for (int i = 0; i < fpu->comboBoxQColumna->Items->Count; i++)
+			fpu->comboBoxAuxQColumna->Items->Add(fpu->comboBoxQColumna->Items[i]);
+		fpu->ComoAbrirPopUp(Indexar);
 		//código aquí
-		//reupera datos
-		delete fpu;
-		//código aquí
+		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			string aux_nombre;
+			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
+			
+			tbl->indexar(aux_nombre);
+			if (fpu->comboBoxAuxQColumna->SelectedIndex > 0) {
+				MarshalString(dgvPrincipal->Columns[fpu->comboBoxAuxQColumna->SelectedIndex - 1]->HeaderText, aux_nombre);
+				tbl->indexar(aux_nombre);
+			}
+
+		} delete fpu;
 
 	}
 	private: System::Void tsbtnFiltrar_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
 		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
 			fpu->comboBoxQColumna->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
-		fpu->ComoAbrirPopUp(Filtrar); fpu->ShowDialog(this);
+		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
+			fpu->comboBoxAuxQColumna2->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
+		fpu->ComoAbrirPopUp(Filtrar);
 		//código aquí
-		//reupera datos
-		delete fpu;
-		//código aquí
+		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			dgvAux->Rows->Clear(); dgvAux->Columns->Clear();
+
+			string aux_nombre, aux_cmp;
+			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
+			MarshalString(fpu->tbxFiltroValor->Text, aux_cmp);
+			if (fpu->comboBoxAuxQColumna2->SelectedIndex == 0) //un solo filtro
+			{
+				switch (fpu->comboBoxFiltroCriterio->SelectedIndex)
+				{
+				case 0: tbl->filtrar(aux_nombre, aux_cmp, filtro_igual); break;
+				case 1: tbl->filtrar(aux_nombre, aux_cmp, filtro_menor); break;
+				case 2: tbl->filtrar(aux_nombre, aux_cmp, filtro_mayor); break;
+				case 3: tbl->filtrar(aux_nombre, aux_cmp, filtro_contenido); break;
+				case 4: tbl->filtrar(aux_nombre, aux_cmp, filtro_nocontenido); break;
+				case 5: tbl->filtrar(aux_nombre, aux_cmp, filtro_inicia); break;
+				case 6: tbl->filtrar(aux_nombre, aux_cmp, filtro_finaliza); break;
+				}
+			}
+			else //doble filtro
+			{
+				switch (fpu->comboBoxFiltroCriterio->SelectedIndex)
+				{
+				case 0: fx_primero = filtro_igual; break;
+				case 1: fx_primero = filtro_menor; break;
+				case 2: fx_primero = filtro_mayor; break;
+				case 3: fx_primero = filtro_contenido; break;
+				case 4: fx_primero = filtro_nocontenido; break;
+				case 5: fx_primero = filtro_inicia; break;
+				case 6: fx_primero = filtro_finaliza; break;
+				}
+				string aux_nombre2, aux_cmp2;
+				MarshalString(dgvPrincipal->Columns[fpu->comboBoxAuxQColumna2->SelectedIndex - 1]->HeaderText, aux_nombre2);
+				MarshalString(fpu->tbxFiltroValor2->Text, aux_cmp2);
+				switch (fpu->comboBoxFiltroCriterio2->SelectedIndex)
+				{
+				case 0: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_igual); break;
+				case 1: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_menor); break;
+				case 2: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_mayor); break;
+				case 3: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_contenido); break;
+				case 4: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_nocontenido); break;
+				case 5: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_inicia); break;
+				case 6: tbl->filtrar(aux_nombre, aux_cmp, fx_primero, aux_nombre2, aux_cmp2, filtro_finaliza); break;
+				}
+			}
+		} delete fpu;
 	}
+			
 	private: System::Void tsbtnOrdenar_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
 		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
@@ -410,21 +482,22 @@ namespace TFAED01 {
 			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
 			string aux_tipo = tbl->getCol(aux_nombre)->getType();
 
-			if (fpu->GetIndex() == 0) { //Ascendente
+			if (fpu->comboBoxOrdenar->SelectedIndex == 0) { //Ascendente
 				if (aux_tipo == "int") {
 					vector<int> aux;
-					for (auto e: tbl->getCol(aux_nombre)->getAllData())
+					for (auto e : tbl->getCol(aux_nombre)->getAllData())
 						aux.push_back(stoi(e));
 					maxheapSort(aux, aux.size(), tblaux);
-				}
-				else if (aux_tipo == "double") {
+				} else if (aux_tipo == "double") {
 					vector<double> aux;
 					for (auto e : tbl->getCol(aux_nombre)->getAllData())
 						aux.push_back(stod(e));
-					//maxheapSort(aux, aux.size(), tblaux);
+					maxheapSort(aux, aux.size(), tblaux);
+				} else {
+					vector<string> aux = tbl->getCol(aux_nombre)->getAllData();
+					maxheapSort(aux, aux.size(), tblaux);
 				}
-				//para string y char falta
-			} else if (fpu->GetIndex() == 1) { //Descendente
+			} else if (fpu->comboBoxOrdenar->SelectedIndex == 1) { //Descendente
 				if (aux_tipo == "int") {
 					vector<int> aux;
 					for (auto e : tbl->getCol(aux_nombre)->getAllData())
@@ -435,15 +508,32 @@ namespace TFAED01 {
 					vector<double> aux;
 					for (auto e : tbl->getCol(aux_nombre)->getAllData())
 						aux.push_back(stod(e));
-					//maxheapSort(aux, aux.size(), tblaux);
+					minheapSort(aux, aux.size(), tblaux);
+				} else {
+					vector<string> aux = tbl->getCol(aux_nombre)->getAllData();
+					minheapSort(aux, aux.size(), tblaux);
 				}
-				//para string y char falta
-			}
-		}
-		//Mostrar en la otra tabla
-		ShowOnAux(tblaux);
-		delete fpu, tblaux;
+			} 
+			ShowOnAux(tblaux); //Mostrar en la otra tabla
+		} delete fpu, tblaux;
 	}
+
+	private: System::Void tsbtnBuscar_Click(System::Object^  sender, System::EventArgs^  e) {
+		FormPopUp ^fpu = gcnew FormPopUp();
+		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
+			fpu->comboBoxQColumna->Items->Add(dgvPrincipal->Columns[i]->HeaderText);
+		fpu->ComoAbrirPopUp(Buscar);
+		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+		{
+			//código aquí
+			string aux_nombre, aux_dato;
+			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
+			MarshalString(fpu->tbxBusquedaValor->Text, aux_dato);
+			tbl->buscar(aux_nombre, aux_dato);
+		}
+		delete fpu;
+	}
+
 	private: System::Void dgvPrincipal_KeyPress(System::Object^  sender, System::Windows::Forms::KeyPressEventArgs^  e) {		
 		if (LastRowIsComplete() == 1) {
 			dgvPrincipal->Rows[dgvPrincipal->RowCount - 1]->ReadOnly = true;
@@ -454,7 +544,7 @@ namespace TFAED01 {
 			{
 				MarshalString(dgvPrincipal->Columns[idxg]->HeaderText->ToString(), aux_nombre);
 				MarshalString(dgvPrincipal[idxg, dgvPrincipal->RowCount - 1]->Value->ToString(), aux_dato);
-				aux_fila->add(aux_nombre, aux_dato); //grupo->AddValuor(auxs, idxg);
+				aux_fila->add(aux_nombre, aux_dato); //Añade los valores de cada celda de la fila
 			}
 			dgvPrincipal->Rows->Add(); //Añade nueva fila
 		}

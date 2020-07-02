@@ -136,8 +136,10 @@
     <ClCompile Include="MenuPrincipal.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CArbol.h" />
     <ClInclude Include="CCols.h" />
     <ClInclude Include="CTabla.h" />
+    <ClInclude Include="Filtros.h" />
     <ClInclude Include="FormPopUp.h">
       <FileType>CppForm</FileType>
     </ClInclude>

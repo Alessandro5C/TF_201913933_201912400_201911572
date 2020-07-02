@@ -24,5 +24,5 @@ public:
 
 	void addDato(string dato) { data.push_back(dato); }
 	void setDato(int nfila, string dato) { data[nfila] = dato; }
-
+	bool findDato(int pos, string dato) { return data[pos] == dato; }
 };

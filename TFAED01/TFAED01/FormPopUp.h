@@ -1,5 +1,5 @@
 #pragma once
-enum Option { NuevaTabla, Indexar, Filtrar, Ordenar };
+enum Option { NuevaTabla, Indexar, Filtrar, Ordenar, Buscar };
 namespace TFAED01 {
 
 	using namespace System;
@@ -19,28 +19,31 @@ namespace TFAED01 {
 		System::Windows::Forms::Button^  btnCrearNuevaTabla;
 		System::Windows::Forms::Panel^  pnlFiltrar;
 		System::Windows::Forms::Button^  btnFiltrar;
-		System::Windows::Forms::TextBox^  tbxFiltroValor;
-		System::Windows::Forms::ComboBox^  comboBoxFiltroCriterio;
-		System::Windows::Forms::Label^  lblFiltroCriterio;
 		System::Windows::Forms::Button^  btnOrdenar;
-		System::Windows::Forms::ComboBox^  comboBoxOrdenar;
-
-
 		System::Windows::Forms::Panel^  pnlIndexar;
 		System::Windows::Forms::Button^  btnIndexar;
 		System::Windows::Forms::Panel^  pnlQColumna;
-	public: System::Windows::Forms::ComboBox^  comboBoxQColumna;
-	private:
-
+		System::Windows::Forms::Button^  btnBuscar;
 		System::Windows::Forms::Label^  lblQColumna;
-		System::Windows::Forms::ComboBox^  comboBoxAuxQColumna;
 		System::Windows::Forms::Label^  lblAuxQColumna;
-	private: System::Windows::Forms::DataGridViewTextBoxColumn^  ColName;
-	private: System::Windows::Forms::DataGridViewComboBoxColumn^  ColTipo;
+		System::Windows::Forms::DataGridViewTextBoxColumn^  ColName;
+		System::Windows::Forms::DataGridViewComboBoxColumn^  ColTipo;
+		System::Windows::Forms::Label^  lblAuxQColumna2;
+		System::Windows::Forms::Panel^  pnlBuscar;
+	public: 
+		System::Windows::Forms::TextBox^  tbxFiltroValor;
+		System::Windows::Forms::ComboBox^  comboBoxFiltroCriterio;
+		System::Windows::Forms::Label^  lblFiltroCriterio;
+		System::Windows::Forms::ComboBox^  comboBoxQColumna;
+		System::Windows::Forms::ComboBox^  comboBoxOrdenar;
+		System::Windows::Forms::ComboBox^  comboBoxAuxQColumna;
+		System::Windows::Forms::TextBox^  tbxFiltroValor2;
+		System::Windows::Forms::ComboBox^  comboBoxFiltroCriterio2;
+		System::Windows::Forms::Label^  lblFiltroCriterio2;
+		System::Windows::Forms::ComboBox^  comboBoxAuxQColumna2;
+		System::Windows::Forms::TextBox^  tbxBusquedaValor;
 
-
-
-	public: System::Windows::Forms::DataGridView^  dgvNuevaTabla;
+		System::Windows::Forms::DataGridView^  dgvNuevaTabla;
 	public:
 		FormPopUp(void)
 		{
@@ -61,6 +64,7 @@ namespace TFAED01 {
 			pnlIndexar->Visible = false; pnlIndexar->Enabled = false;
 			pnlFiltrar->Visible = false; pnlFiltrar->Enabled = false;
 			pnlOrdenar->Visible = false; pnlOrdenar->Enabled = false;
+			pnlBuscar->Visible = false; pnlBuscar->Enabled = false;
 			pnlQColumna->Visible = false; pnlQColumna->Enabled = false;
 		}
 
@@ -86,22 +90,18 @@ namespace TFAED01 {
 				pnlOrdenar->SetBounds(3, 7 + 34, 
 					pnlOrdenar->Width, pnlOrdenar->Height);
 				this->Text = "Ordenar"; break;
+			case Buscar: FormPopUp::Height = pnlBuscar->Height + 45 + 34;
+				pnlBuscar->Visible = true; pnlBuscar->Enabled = true;
+				pnlBuscar->SetBounds(3, 7 + 34,
+					pnlBuscar->Width, pnlBuscar->Height);
+				this->Text = "Buscar"; break;
 			} if (o != NuevaTabla) { pnlQColumna->Visible = true; pnlQColumna->Enabled = true; }
-		}
-
-		void Fill_comboBoxIndexar() {
-			for (int i = 0; i < comboBoxQColumna->Items->Count; i++)
-				comboBoxAuxQColumna->Items->Add(comboBoxQColumna->Items[i]);
 		}
 
 		String^ GetNombre(bool tipo, int fila) {
 			if (tipo)
 				return dgvNuevaTabla[1, fila]->Value->ToString();
 			return dgvNuevaTabla[0, fila]->Value->ToString();
-		}
-
-		int GetIndex() {
-			return comboBoxOrdenar->SelectedIndex;
 		}
 
 #pragma region Windows Form Designer generated code
@@ -113,13 +113,20 @@ namespace TFAED01 {
 		{
 			this->pnlNuevaTabla = (gcnew System::Windows::Forms::Panel());
 			this->dgvNuevaTabla = (gcnew System::Windows::Forms::DataGridView());
+			this->ColName = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->ColTipo = (gcnew System::Windows::Forms::DataGridViewComboBoxColumn());
 			this->btnCrearNuevaTabla = (gcnew System::Windows::Forms::Button());
 			this->pnlOrdenar = (gcnew System::Windows::Forms::Panel());
 			this->btnOrdenar = (gcnew System::Windows::Forms::Button());
 			this->comboBoxOrdenar = (gcnew System::Windows::Forms::ComboBox());
 			this->lblOrdenCriterio = (gcnew System::Windows::Forms::Label());
 			this->pnlFiltrar = (gcnew System::Windows::Forms::Panel());
+			this->tbxFiltroValor2 = (gcnew System::Windows::Forms::TextBox());
+			this->comboBoxFiltroCriterio2 = (gcnew System::Windows::Forms::ComboBox());
+			this->lblFiltroCriterio2 = (gcnew System::Windows::Forms::Label());
+			this->comboBoxAuxQColumna2 = (gcnew System::Windows::Forms::ComboBox());
 			this->btnFiltrar = (gcnew System::Windows::Forms::Button());
+			this->lblAuxQColumna2 = (gcnew System::Windows::Forms::Label());
 			this->tbxFiltroValor = (gcnew System::Windows::Forms::TextBox());
 			this->comboBoxFiltroCriterio = (gcnew System::Windows::Forms::ComboBox());
 			this->lblFiltroCriterio = (gcnew System::Windows::Forms::Label());
@@ -130,14 +137,16 @@ namespace TFAED01 {
 			this->pnlQColumna = (gcnew System::Windows::Forms::Panel());
 			this->comboBoxQColumna = (gcnew System::Windows::Forms::ComboBox());
 			this->lblQColumna = (gcnew System::Windows::Forms::Label());
-			this->ColName = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
-			this->ColTipo = (gcnew System::Windows::Forms::DataGridViewComboBoxColumn());
+			this->pnlBuscar = (gcnew System::Windows::Forms::Panel());
+			this->tbxBusquedaValor = (gcnew System::Windows::Forms::TextBox());
+			this->btnBuscar = (gcnew System::Windows::Forms::Button());
 			this->pnlNuevaTabla->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dgvNuevaTabla))->BeginInit();
 			this->pnlOrdenar->SuspendLayout();
 			this->pnlFiltrar->SuspendLayout();
 			this->pnlIndexar->SuspendLayout();
 			this->pnlQColumna->SuspendLayout();
+			this->pnlBuscar->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// pnlNuevaTabla
@@ -161,6 +170,19 @@ namespace TFAED01 {
 			this->dgvNuevaTabla->Size = System::Drawing::Size(217, 146);
 			this->dgvNuevaTabla->TabIndex = 0;
 			// 
+			// ColName
+			// 
+			this->ColName->HeaderText = L"Nombre de la columna";
+			this->ColName->Name = L"ColName";
+			this->ColName->Width = 85;
+			// 
+			// ColTipo
+			// 
+			this->ColTipo->HeaderText = L"Tipo de dato de la columna";
+			this->ColTipo->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"int", L"double", L"string" });
+			this->ColTipo->Name = L"ColTipo";
+			this->ColTipo->Width = 70;
+			// 
 			// btnCrearNuevaTabla
 			// 
 			this->btnCrearNuevaTabla->Location = System::Drawing::Point(77, 155);
@@ -176,7 +198,7 @@ namespace TFAED01 {
 			this->pnlOrdenar->Controls->Add(this->btnOrdenar);
 			this->pnlOrdenar->Controls->Add(this->comboBoxOrdenar);
 			this->pnlOrdenar->Controls->Add(this->lblOrdenCriterio);
-			this->pnlOrdenar->Location = System::Drawing::Point(3, 288);
+			this->pnlOrdenar->Location = System::Drawing::Point(3, 361);
 			this->pnlOrdenar->Name = L"pnlOrdenar";
 			this->pnlOrdenar->Size = System::Drawing::Size(226, 85);
 			this->pnlOrdenar->TabIndex = 1;
@@ -212,23 +234,77 @@ namespace TFAED01 {
 			// 
 			// pnlFiltrar
 			// 
+			this->pnlFiltrar->Controls->Add(this->tbxFiltroValor2);
+			this->pnlFiltrar->Controls->Add(this->comboBoxFiltroCriterio2);
+			this->pnlFiltrar->Controls->Add(this->lblFiltroCriterio2);
+			this->pnlFiltrar->Controls->Add(this->comboBoxAuxQColumna2);
 			this->pnlFiltrar->Controls->Add(this->btnFiltrar);
+			this->pnlFiltrar->Controls->Add(this->lblAuxQColumna2);
 			this->pnlFiltrar->Controls->Add(this->tbxFiltroValor);
 			this->pnlFiltrar->Controls->Add(this->comboBoxFiltroCriterio);
 			this->pnlFiltrar->Controls->Add(this->lblFiltroCriterio);
 			this->pnlFiltrar->Location = System::Drawing::Point(3, 199);
 			this->pnlFiltrar->Name = L"pnlFiltrar";
-			this->pnlFiltrar->Size = System::Drawing::Size(226, 83);
+			this->pnlFiltrar->Size = System::Drawing::Size(226, 156);
 			this->pnlFiltrar->TabIndex = 10;
+			// 
+			// tbxFiltroValor2
+			// 
+			this->tbxFiltroValor2->Location = System::Drawing::Point(124, 96);
+			this->tbxFiltroValor2->Name = L"tbxFiltroValor2";
+			this->tbxFiltroValor2->Size = System::Drawing::Size(99, 20);
+			this->tbxFiltroValor2->TabIndex = 15;
+			// 
+			// comboBoxFiltroCriterio2
+			// 
+			this->comboBoxFiltroCriterio2->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->comboBoxFiltroCriterio2->FormattingEnabled = true;
+			this->comboBoxFiltroCriterio2->Items->AddRange(gcnew cli::array< System::Object^  >(7) {
+				L"Es igual a...", L"Es menor que...",
+					L"Es mayor que...", L"Contiene a ...", L"No contiene a ...", L"Inicia con ...", L"Finaliza con ..."
+			});
+			this->comboBoxFiltroCriterio2->Location = System::Drawing::Point(6, 96);
+			this->comboBoxFiltroCriterio2->Name = L"comboBoxFiltroCriterio2";
+			this->comboBoxFiltroCriterio2->Size = System::Drawing::Size(112, 21);
+			this->comboBoxFiltroCriterio2->TabIndex = 14;
+			// 
+			// lblFiltroCriterio2
+			// 
+			this->lblFiltroCriterio2->AutoSize = true;
+			this->lblFiltroCriterio2->Location = System::Drawing::Point(3, 80);
+			this->lblFiltroCriterio2->Name = L"lblFiltroCriterio2";
+			this->lblFiltroCriterio2->Size = System::Drawing::Size(99, 13);
+			this->lblFiltroCriterio2->TabIndex = 13;
+			this->lblFiltroCriterio2->Text = L"Criterio de filtración:";
+			// 
+			// comboBoxAuxQColumna2
+			// 
+			this->comboBoxAuxQColumna2->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->comboBoxAuxQColumna2->FormattingEnabled = true;
+			this->comboBoxAuxQColumna2->Items->AddRange(gcnew cli::array< System::Object^  >(1) { L"Ninguna" });
+			this->comboBoxAuxQColumna2->Location = System::Drawing::Point(84, 56);
+			this->comboBoxAuxQColumna2->Name = L"comboBoxAuxQColumna2";
+			this->comboBoxAuxQColumna2->Size = System::Drawing::Size(139, 21);
+			this->comboBoxAuxQColumna2->TabIndex = 11;
 			// 
 			// btnFiltrar
 			// 
-			this->btnFiltrar->Location = System::Drawing::Point(77, 51);
+			this->btnFiltrar->Location = System::Drawing::Point(77, 122);
 			this->btnFiltrar->Name = L"btnFiltrar";
 			this->btnFiltrar->Size = System::Drawing::Size(75, 23);
 			this->btnFiltrar->TabIndex = 8;
 			this->btnFiltrar->Text = L"Filtrar datos";
 			this->btnFiltrar->UseVisualStyleBackColor = true;
+			this->btnFiltrar->Click += gcnew System::EventHandler(this, &FormPopUp::btnFiltrar_Click);
+			// 
+			// lblAuxQColumna2
+			// 
+			this->lblAuxQColumna2->AutoSize = true;
+			this->lblAuxQColumna2->Location = System::Drawing::Point(27, 59);
+			this->lblAuxQColumna2->Name = L"lblAuxQColumna2";
+			this->lblAuxQColumna2->Size = System::Drawing::Size(51, 13);
+			this->lblAuxQColumna2->TabIndex = 12;
+			this->lblAuxQColumna2->Text = L"Columna:";
 			// 
 			// tbxFiltroValor
 			// 
@@ -241,9 +317,9 @@ namespace TFAED01 {
 			// 
 			this->comboBoxFiltroCriterio->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBoxFiltroCriterio->FormattingEnabled = true;
-			this->comboBoxFiltroCriterio->Items->AddRange(gcnew cli::array< System::Object^  >(4) {
-				L"Contiene a ...", L"No contiene a ...",
-					L"Comienza con ...", L"Finaliza con ..."
+			this->comboBoxFiltroCriterio->Items->AddRange(gcnew cli::array< System::Object^  >(7) {
+				L"Es igual a...", L"Es menor que...",
+					L"Es mayor que...", L"Contiene a ...", L"No contiene a ...", L"Inicia con ...", L"Finaliza con ..."
 			});
 			this->comboBoxFiltroCriterio->Location = System::Drawing::Point(6, 25);
 			this->comboBoxFiltroCriterio->Name = L"comboBoxFiltroCriterio";
@@ -264,7 +340,7 @@ namespace TFAED01 {
 			this->pnlIndexar->Controls->Add(this->comboBoxAuxQColumna);
 			this->pnlIndexar->Controls->Add(this->lblAuxQColumna);
 			this->pnlIndexar->Controls->Add(this->btnIndexar);
-			this->pnlIndexar->Location = System::Drawing::Point(3, 379);
+			this->pnlIndexar->Location = System::Drawing::Point(3, 452);
 			this->pnlIndexar->Name = L"pnlIndexar";
 			this->pnlIndexar->Size = System::Drawing::Size(226, 72);
 			this->pnlIndexar->TabIndex = 10;
@@ -296,12 +372,13 @@ namespace TFAED01 {
 			this->btnIndexar->TabIndex = 9;
 			this->btnIndexar->Text = L"Indexar";
 			this->btnIndexar->UseVisualStyleBackColor = true;
+			this->btnIndexar->Click += gcnew System::EventHandler(this, &FormPopUp::btnIndexar_Click);
 			// 
 			// pnlQColumna
 			// 
 			this->pnlQColumna->Controls->Add(this->comboBoxQColumna);
 			this->pnlQColumna->Controls->Add(this->lblQColumna);
-			this->pnlQColumna->Location = System::Drawing::Point(3, 457);
+			this->pnlQColumna->Location = System::Drawing::Point(3, 610);
 			this->pnlQColumna->Name = L"pnlQColumna";
 			this->pnlQColumna->Size = System::Drawing::Size(226, 34);
 			this->pnlQColumna->TabIndex = 10;
@@ -324,18 +401,31 @@ namespace TFAED01 {
 			this->lblQColumna->TabIndex = 9;
 			this->lblQColumna->Text = L"Columna:";
 			// 
-			// ColName
+			// pnlBuscar
 			// 
-			this->ColName->HeaderText = L"Nombre de la columna";
-			this->ColName->Name = L"ColName";
-			this->ColName->Width = 85;
+			this->pnlBuscar->Controls->Add(this->tbxBusquedaValor);
+			this->pnlBuscar->Controls->Add(this->btnBuscar);
+			this->pnlBuscar->Location = System::Drawing::Point(3, 530);
+			this->pnlBuscar->Name = L"pnlBuscar";
+			this->pnlBuscar->Size = System::Drawing::Size(226, 74);
+			this->pnlBuscar->TabIndex = 11;
 			// 
-			// ColTipo
+			// tbxBusquedaValor
 			// 
-			this->ColTipo->HeaderText = L"Tipo de dato de la columna";
-			this->ColTipo->Items->AddRange(gcnew cli::array< System::Object^  >(3) { L"int", L"double", L"string" });
-			this->ColTipo->Name = L"ColTipo";
-			this->ColTipo->Width = 70;
+			this->tbxBusquedaValor->Location = System::Drawing::Point(21, 12);
+			this->tbxBusquedaValor->Name = L"tbxBusquedaValor";
+			this->tbxBusquedaValor->Size = System::Drawing::Size(185, 20);
+			this->tbxBusquedaValor->TabIndex = 16;
+			// 
+			// btnBuscar
+			// 
+			this->btnBuscar->Location = System::Drawing::Point(77, 38);
+			this->btnBuscar->Name = L"btnBuscar";
+			this->btnBuscar->Size = System::Drawing::Size(75, 23);
+			this->btnBuscar->TabIndex = 9;
+			this->btnBuscar->Text = L"Buscar";
+			this->btnBuscar->UseVisualStyleBackColor = true;
+			this->btnBuscar->Click += gcnew System::EventHandler(this, &FormPopUp::btnBuscar_Click);
 			// 
 			// FormPopUp
 			// 
@@ -344,7 +434,8 @@ namespace TFAED01 {
 			this->AutoSizeMode = System::Windows::Forms::AutoSizeMode::GrowAndShrink;
 			this->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(224)), static_cast<System::Int32>(static_cast<System::Byte>(224)),
 				static_cast<System::Int32>(static_cast<System::Byte>(224)));
-			this->ClientSize = System::Drawing::Size(234, 496);
+			this->ClientSize = System::Drawing::Size(234, 653);
+			this->Controls->Add(this->pnlBuscar);
 			this->Controls->Add(this->pnlQColumna);
 			this->Controls->Add(this->pnlIndexar);
 			this->Controls->Add(this->pnlFiltrar);
@@ -365,6 +456,8 @@ namespace TFAED01 {
 			this->pnlIndexar->PerformLayout();
 			this->pnlQColumna->ResumeLayout(false);
 			this->pnlQColumna->PerformLayout();
+			this->pnlBuscar->ResumeLayout(false);
+			this->pnlBuscar->PerformLayout();
 			this->ResumeLayout(false);
 
 		}
@@ -386,8 +479,25 @@ namespace TFAED01 {
 		}
 	}
 
+	private: System::Void btnFiltrar_Click(System::Object^  sender, System::EventArgs^  e) {
+		if (comboBoxQColumna->SelectedIndex != -1 && tbxFiltroValor->Text != "" && comboBoxFiltroCriterio->SelectedIndex != -1) {
+			if (comboBoxAuxQColumna2->SelectedIndex == 0)
+				this->DialogResult = System::Windows::Forms::DialogResult::OK;
+			else if (comboBoxAuxQColumna2->SelectedIndex > 0 && tbxFiltroValor2->Text != "" && comboBoxFiltroCriterio2->SelectedIndex != -1)
+				this->DialogResult = System::Windows::Forms::DialogResult::OK;
+		}
+	}
 	private: System::Void btnOrdenar_Click(System::Object^  sender, System::EventArgs^  e) {
-		this->DialogResult = System::Windows::Forms::DialogResult::OK;
+		if (comboBoxQColumna->SelectedIndex != -1 && comboBoxOrdenar->SelectedIndex != -1)
+			this->DialogResult = System::Windows::Forms::DialogResult::OK;
+	}
+	private: System::Void btnIndexar_Click(System::Object^  sender, System::EventArgs^  e) {
+		if (comboBoxQColumna->SelectedIndex != -1 && comboBoxAuxQColumna->SelectedIndex != -1)
+			this->DialogResult = System::Windows::Forms::DialogResult::OK;
+	}
+	private: System::Void btnBuscar_Click(System::Object^  sender, System::EventArgs^  e) {
+		if (comboBoxQColumna->SelectedIndex != -1 && tbxBusquedaValor->Text != "")
+			this->DialogResult = System::Windows::Forms::DialogResult::OK;
 	}
 };
 }
