@@ -1,8 +1,7 @@
 #pragma once
 #include "FormPopUp.h"
 #include "CTabla.h"
-#include "HeapSort.h"
-#include "Filtros.h"
+#include "Funciones.h"
 #include <fstream>
 namespace TFAED01 {
 
@@ -17,7 +16,6 @@ namespace TFAED01 {
 	{
 	private: System::ComponentModel::IContainer^  components;
 	private:
-
 		System::Windows::Forms::ToolStrip^  toolStrip1;
 		System::Windows::Forms::ToolStripButton^  tsbtnIndexar;
 		System::Windows::Forms::ToolStripButton^  tsbtnFiltrar;
@@ -34,15 +32,10 @@ namespace TFAED01 {
 		System::Windows::Forms::ToolStripMenuItem^  tsbtnNuevaTabla;
 		System::Windows::Forms::ToolStripSeparator^  toolStripSeparator5;
 		System::Windows::Forms::OpenFileDialog^  openFileDialog1;
-
-
-
+		System::Windows::Forms::DataGridView^  dgvAux;
+		System::Windows::Forms::Splitter^  splitter1;
+		System::Windows::Forms::ToolStripButton^  tsbtnBuscar;
 		System::Windows::Forms::DataGridView^  dgvPrincipal;
-	private: System::Windows::Forms::DataGridView^  dgvAux;
-	private: System::Windows::Forms::Splitter^  splitter1;
-	private: System::Windows::Forms::ToolStripButton^  tsbtnBuscar;
-
-
 
 	private: CTabla* tbl;
 	public:
@@ -54,11 +47,10 @@ namespace TFAED01 {
 		~MenuPrincipal()
 		{
 			if (components)
-			{
 				delete components;
-			}
+			delete tbl;
 		}
-
+		//Convertir de System::String a std::string
 		void MarshalString(String ^ s, string& os) {
 			using namespace Runtime::InteropServices;
 			const char* chars =
@@ -78,7 +70,12 @@ namespace TFAED01 {
 			string aux_nombre, aux_tipo;
 			MarshalString(name, aux_nombre); MarshalString(tipo, aux_tipo);
 			CCols* aux_col = new CCols(aux_nombre, aux_tipo); tbl->addCol(aux_col);
-			//nose si hay q borrar
+		}
+		void AñadirColumnaOnlyDGV(String ^name, String^ tipo) {
+			int i = dgvPrincipal->ColumnCount;
+			dgvPrincipal->Columns->Add("Columna" + i.ToString(), name);
+			dgvPrincipal->Columns[i]->SortMode
+				= DataGridViewColumnSortMode::NotSortable;
 		}
 		//Para dgvAux
 		void AñadirColumna(String ^name) {
@@ -87,11 +84,7 @@ namespace TFAED01 {
 			dgvAux->Columns[i]->SortMode
 				= DataGridViewColumnSortMode::NotSortable;
 		}
-
-		void AñadirFila() {
-
-		}
-
+		//Validar si la última fila es correcta
 		bool IsItCorrect(String^ auxs, string tipo) {
 			if (tipo == "int") {
 				int number;
@@ -101,7 +94,6 @@ namespace TFAED01 {
 				return Double::TryParse(auxs, fraccion);
 			}
 		}
-
 		int LastRowIsComplete() {
 			try
 			{
@@ -119,7 +111,29 @@ namespace TFAED01 {
 			}
 			catch (Exception ^ex) { return 0; }
 		}
-
+		//Mostrar en DGV's
+		void ShowOnPrincipal(CTabla* grup) {
+			//Borra lo que aparece del DGV anterior
+			dgvPrincipal->Rows->Clear(); dgvPrincipal->Columns->Clear();
+			//Crear las columnas a mostrar
+			for (int idxg = 0; idxg < grup->getNcols(); idxg++) {
+				String ^name = gcnew String(grup->getColName(idxg).c_str());
+				String ^tipo = gcnew String(grup->getCol(grup->getColName(idxg))->getType().c_str());
+				AñadirColumnaOnlyDGV(name, tipo); delete name, tipo;
+			}
+			//Crear las filas a mostrar
+			string aux_nombre; int auxi;
+			dgvPrincipal->Rows->Add(); //Añade nueva fila
+			for (int i = 0; i < grup->getNfilas(); i++) {
+				dgvPrincipal->Rows->Add(); //Añade nueva fila
+				for (int idxg = 0; idxg < grup->getNcols(); idxg++) {
+					MarshalString(dgvPrincipal->Columns[idxg]->HeaderText, aux_nombre);
+					auxi = tbl->getFila(i)->getidx();
+					String ^dato = gcnew String(tbl->getCol(aux_nombre)->getDato(auxi).c_str());
+					dgvPrincipal[idxg, i]->Value = dato; delete dato;
+				}
+			}
+		}
 		void ShowOnAux(CTabla* grup) {
 			//Crear las columnas a mostrar
 			for (int idxg = 0; idxg < grup->getNcols(); idxg++)
@@ -358,30 +372,33 @@ namespace TFAED01 {
 			MarshalString(dgvPrincipal->Columns[dgvPrincipal->ColumnCount - 1]->HeaderText->ToString(), aux_last_col);
 			tbl->saveOnArch(aux_arch, aux_last_col);
 		}
-
 	}
 
 	private: System::Void tsbtnAbrirArch_Click(System::Object^  sender, System::EventArgs^  e) {
+		MessageBox::Show("Solo funcionará correctamente si:\n"
+			+ "*El formato es CSV (separado por comas ';').\n"
+			+ "*La primera fila indica los tipos de datos de las columnas.\n"
+			+ "*La segunda fila indica los nombres de las columnas.\n"
+			+ "*Los nombres de las columnas están ubicados\n"
+			+ " de menor a mayor (guiandonos según el código ASCII).\n",
+			"Info", MessageBoxButtons::OK, MessageBoxIcon::Information);
 		if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
 			//código aquí
-			/*
-			string auxs; MarshalString(openFileDialog1->FileName->ToString(), auxs);
-			std::ifstream arch(auxs);
-			if (arch.is_open() == NULL)
-			{
-				MessageBox::Show(L"Ha ocurrido un error, intente nuevamente.", "Atención",
-					MessageBoxButtons::OK, MessageBoxIcon::Error);
-				_exit(0);
-			}
-
-			*/
+			tbl = new CTabla();
+			string aux_arch;
+			MarshalString(openFileDialog1->FileName->ToString(), aux_arch);
+			tbl->readAnArch(aux_arch);
+			ShowOnPrincipal(tbl);
+			tsbtnIndexar->Enabled = true; tsbtnFiltrar->Enabled = true; tsbtnOrdenar->Enabled = true;
 		}
 	}
+
 	private: System::Void tsbtnNuevaTabla_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
-		fpu->ComoAbrirPopUp(NuevaTabla); tbl = new CTabla();
+		fpu->ComoAbrirPopUp(NuevaTabla);
 		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 		{
+			tbl = new CTabla();
 			dgvPrincipal->Rows->Clear(); dgvPrincipal->Columns->Clear();
 			for (int i = 0; i < fpu->dgvNuevaTabla->RowCount - 1; i++)
 				AñadirColumna(fpu->GetNombre(false, i), fpu->GetNombre(true, i));
@@ -390,6 +407,7 @@ namespace TFAED01 {
 		}
 		delete fpu;
 	}
+
 	private: System::Void tsbtnIndexar_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
 		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
@@ -400,6 +418,7 @@ namespace TFAED01 {
 		//código aquí
 		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 		{
+			tbl->borrar_arboles();
 			string aux_nombre;
 			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
 			
@@ -412,6 +431,7 @@ namespace TFAED01 {
 		} delete fpu;
 
 	}
+
 	private: System::Void tsbtnFiltrar_Click(System::Object^  sender, System::EventArgs^  e) {
 		FormPopUp ^fpu = gcnew FormPopUp();
 		for (int i = 0; i < dgvPrincipal->ColumnCount; i++)
@@ -422,8 +442,6 @@ namespace TFAED01 {
 		//código aquí
 		if (fpu->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 		{
-			dgvAux->Rows->Clear(); dgvAux->Columns->Clear();
-
 			string aux_nombre, aux_cmp;
 			MarshalString(dgvPrincipal->Columns[fpu->comboBoxQColumna->SelectedIndex]->HeaderText, aux_nombre);
 			MarshalString(fpu->tbxFiltroValor->Text, aux_cmp);

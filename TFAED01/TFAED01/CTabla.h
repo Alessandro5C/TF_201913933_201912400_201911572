@@ -1,5 +1,7 @@
 #pragma once
+#include "CCols.h"
 #include "CArbol.h"
+#include "CSVRow.h"
 #include <functional>
 #include <iomanip>
 #include <fstream>
@@ -21,46 +23,19 @@ public:
 		CFila(CTabla* tabla) : tabla(tabla) {}
 		~CFila() {}
 
-		CTabla* getTabla() { return tabla; } //Añadido
+		CTabla* getTabla() { return tabla; }
 
 		int getidx() { return idx; }
 
 		void add(string nombre, string dato) { tabla->mapcols[nombre]->addDato(dato); }
-		//aqui
+
 		void get(int i)
 		{
 			for (auto col : tabla->mapcols)
 				cout << setw(15) << col.second->getDato(i);
 			cout << endl;
 		}
-		//variacion
-		void get() {
-			for (auto col : tabla->mapcols)
-				cout << setw(15) << col.second->getDato(idx);
-			cout << endl;
-			/*         col.second->getDato(idx);           */
-		}
-		void get(int i, string name_last_col) {
-			for (auto col : tabla->mapcols) {
-				cout << col.second->getDato(i);
-				//(e.first == name_last_col) ? arch << "\n" : arch << ";";
-			}
-		}
-		//aqui
 
-		void cambiar(int i, int j)
-		{
-			for (auto col : tabla->mapcols)
-			{
-				
-				auto aux = col.second->getDato(i);
-				auto aux2 = col.second->getDato(j);
-
-				col.second->setDato(j, aux);
-				col.second->setDato(i, aux2);
-			}
-		}
-		//variacion
 		void cambiar(int j) {
 			for (auto col : tabla->mapcols) {
 				auto aux1 = col.second->getDato(idx); 
@@ -96,16 +71,20 @@ public:
 		return aux;
 	}
 
+	string getColName(int i) {
+		int aux = 0;
+		for (auto e: mapcols)
+		{
+			if (aux == i)
+				return e.first;
+			aux++;
+		}
+	}
 	CCols* getCol(string name_col) { return mapcols[name_col]; }
 	CFila* getFila(int nfila) { return maprows[nfila]; }
 
-	void swapFilas(int i, int j) {
-		CFila* aux = maprows[i];
-		maprows[i] = maprows[j];
-		maprows[j] = aux; delete aux; //nose si el indice idx en la clase fila tamb sea necesario  cambiar
-	}
-
-	//aqui
+	
+	//Función mostrar tabla en consola
 	void mostrar()
 	{
 		for (auto i : mapcols)
@@ -118,6 +97,42 @@ public:
 
 	}
 
+	//Lee un archivo CSV pero con ciertas condiciones
+	void readAnArch(string auxs) {
+		std::ifstream	file(auxs);
+		CSVRow			row;
+
+		int aux = 0; vector<CCols*> aux_cols;
+		while (file >> row)
+		{
+			if (aux == 0)
+			{
+				for (int i = 0; i < row.size(); i++)
+				{
+					CCols* col = new CCols(row[i]);
+					aux_cols.push_back(col);		
+				} aux++;
+			}
+			else if (aux == 1)
+			{
+				for (int i = 0; i < row.size(); i++)
+				{
+					aux_cols[i]->setName(row[i]);
+					this->addCol(aux_cols[i]);
+				} aux++;
+			}
+			else
+			{
+				CFila* aux_fila = this->addFila();
+				int num_col = 0;
+				for (auto e : mapcols) {
+					aux_fila->add(e.second->getName(), row[num_col]);
+					num_col++;
+				}
+			}
+		}
+	}
+	//Guardar archivos con formato CSV (separado por comas ';')
 	void saveOnArch(string auxs, string name_last_col) {
 		std::ofstream arch(auxs);
 		if (arch.is_open() == NULL) { return; }
@@ -140,25 +155,7 @@ public:
 		} arch.close();
 	}
 
-	//aqui
-	void ordenar(string colu, function<bool(string, string)>&lam)
-	{
-		vector<string>aux = mapcols[colu]->getAllData();
-
-		for (int i = 0; i < aux.size(); i++)
-		{
-			for (int j = i + 1; j < aux.size(); j++)
-			{
-				if (lam(aux[i], aux[j]))
-				{
-					maprows[0]->cambiar(i, j);
-					aux = mapcols[colu]->getAllData();
-				}
-			}
-		}
-	};
-
-	//aqui
+	//Filtrado
 	void filtrar(string colu, string cmp, function<bool(string, string, string)>&lam)
 	{
 		cout << "Los resultados del filtrado son:\n";
@@ -179,32 +176,7 @@ public:
 				maprows[i]->get(i);
 		}
 	}
-	//variacion
-	void filtrar(string nombre_col, string s_cmp, function<bool(string, string)>&lambda, CTabla* taux) {
-		CCols* aux_col;
-		for (auto e : mapcols) {
-			aux_col = new CCols(e.first, e.second->getType());
-			taux->addCol(aux_col);
-		}
-
-		for (auto e: taux->mapcols)
-		{
-			cout << e.first << "\t";
-		}
-		//las columnas deben ser igual para los dos, this and grup
-		//osea deben haber sido creadas antes
-		CFila* aux_fila;
-		for (int i = 0; i < f; i++)	{
-			if (lambda(mapcols[nombre_col]->getDato(i), s_cmp)) {
-				aux_fila = taux->addFila();
-				for (auto e : mapcols/*tabla->mapcols*/) {
-					aux_fila->add(e.first, e.second->getDato(i));
-				}
-			}
-		}
-
-	}
-
+	//Indexado
 	void indexar(string nombre_cols)
 	{
 		CArbol*nuevo = new CArbol();
@@ -213,33 +185,26 @@ public:
 		vector<string>aux = mapcols[nombre_cols]->getAllData();
 
 		for (int i = 0; i < f; i++)
-		{
 			nuevo->add(aux[i], i);
-		}
-
+		cout << "La columna indexada es: " << nombre_cols << endl;
 
 	}
+	//Búsqueda
 	void buscar(string nombre_col, string dato)
 	{
 		int existe = arboles.count(nombre_col);
 		cout << "Los resultados de la búsqueda:\t";
 		if (existe == 1)
 		{
-			// Buscar en el árbol
-			//en arbol
-			cout << "en un BST AVL:\n";
+			cout << "(en un BST AVL)\n";
 			vector<int>pos = arboles[nombre_col]->find(dato);
 
 			for (int i = 0; i < pos.size(); i++)
-			{
 				maprows[pos[i]]->get(pos[i]);
-			}
 		}
 		else
 		{
-			// Buscar en la columna; 
-			//secuencial
-			cout << "secuencial:\n";
+			cout << "(secuencial)\n";
 			for (int i = 0; i < f; i++)
 			{
 				if (mapcols[nombre_col]->findDato(i, dato))
@@ -247,8 +212,12 @@ public:
 			}
 		}
 	}
-	void inorder(string nombre_col)
-	{
-		arboles[nombre_col]->inorder();
+
+
+	void borrar_arboles() {
+		for (auto e: arboles)
+			e.second->clear();
+		arboles.clear();
 	}
+	void inorder(string nombre_col) { arboles[nombre_col]->inOrder(); }
 };

@@ -1,32 +1,34 @@
 #pragma once
-#include "CCols.h"
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
 class CArbol
 {
 	struct Node {
+		int i;
+		int height;
 		string elem;
-		int i; // opcional
 		Node*right;
 		Node*left;
-		int height;
 
 		Node(string elem, int i)
 		{
-			this->elem = elem;
-			this->i = i;
-			right = nullptr;
-			left = nullptr;
+			this->elem = elem; this->i = i;
+			right = nullptr; left = nullptr;
 			height = 0;
 		}
 	};
 	Node*root;
 	int len;
 public:
-	CArbol() :root(nullptr), len(0) {}
-	~CArbol() { clear(root); }
-	int height() { return height(root); }
-	int size() { return len; }
-	void clear() { clear(root); len = 0; }
-	void add(string elem, int i) { add(root, elem, i); }
+	CArbol () :root(nullptr), len(0) {}
+	~CArbol () { clear(root); }
+	int height () { return height(root); }
+	int size () { return len; }
+	void clear () { clear(root); len = 0; }
+	void add (string elem, int i) { add(root, elem, i); }
 
 	vector<int> find(string elem) {
 		Node*aux = root;
@@ -40,12 +42,10 @@ public:
 		return pos;
 	}
 
-	void inorder()
-	{
-		inorder(root);
-	}
+	void inOrder() { inOrder(root); }
+
 private:
-	void clear(Node*& node)
+	void clear (Node*& node)
 	{
 		if (node != nullptr)
 		{
@@ -55,59 +55,12 @@ private:
 			node = nullptr;
 		}
 	}
-	int height(Node*node)
+	int height (Node*node)
 	{
 		return node == nullptr ? -1 : node->height;
 	}
-	void add(Node*& node, string elem, int i)
-	{
-		if (node == nullptr)
-		{
-			node = new Node(elem, i);
-			len++;
-		}
-		else
-		{
-			if (elem <= node->elem)
-				add(node->left, elem, i);
-			else
-			{
-				if (elem > node->elem)
-					add(node->right, elem, i);
-			}
-			// balance(node);
-		}
-	}
-	int find(Node*& node, string elem)
-	{
-		if (node != nullptr)
-		{
-			if (elem == node->elem)
-			{
-				Node*aux = node;
-				node = node->left;
-				return aux->i;
-			}
-			else
-			{
-				if (elem <= node->elem)
-				{
-					node = node->left;
-					return find(node, elem);
-				}
-				else {
-					if (elem > node->elem)
-					{
-						node = node->right;
-						return find(node, elem);
-					}
-				}
-			}
-		}
-		return -1;
-	}
 
-	void balance(Node*&node)
+	void balance (Node*&node)
 	{
 		int hl = height(node->left);
 		int hr = height(node->right);
@@ -137,7 +90,55 @@ private:
 		}
 
 	}
-	void rotateLeft(Node*&node)
+	void add (Node*& node, string elem, int i)
+	{
+		if (node == nullptr)
+		{
+			node = new Node(elem, i);
+			len++;
+		}
+		else
+		{
+			if (elem <= node->elem)
+				add(node->left, elem, i);
+			else
+			{
+				if (elem > node->elem)
+					add(node->right, elem, i);
+			}
+			balance(node);
+		}
+	}
+	int find (Node*& node, string elem)
+	{
+		if (node != nullptr)
+		{
+			if (elem == node->elem)
+			{
+				Node*aux = node;
+				node = node->left;
+				return aux->i;
+			}
+			else
+			{
+				if (elem <= node->elem)
+				{
+					node = node->left;
+					return find(node, elem);
+				}
+				else {
+					if (elem > node->elem)
+					{
+						node = node->right;
+						return find(node, elem);
+					}
+				}
+			}
+		}
+		return -1;
+	}
+
+	void rotateLeft (Node*&node)
 	{
 		Node*aux = node->right;
 		node->right = aux->left;
@@ -146,7 +147,7 @@ private:
 		updateHeight(aux);
 		node = aux;
 	}
-	void rotateRight(Node*&node)
+	void rotateRight (Node*&node)
 	{
 		Node*aux = node->left;
 		node->left = aux->right;
@@ -155,7 +156,8 @@ private:
 		updateHeight(aux);
 		node = aux;
 	}
-	void updateHeight(Node*node)
+
+	void updateHeight (Node*node)
 	{
 		if (node != nullptr)
 		{
@@ -165,13 +167,13 @@ private:
 			node->height = std::fmax(hl, hr) + 1;
 		}
 	}
-	void inorder(Node*node)
+	void inOrder (Node*node)
 	{
 		if (node != nullptr)
 		{
-			inorder(node->left);
+			inOrder(node->left);
 			cout << node->elem << " " << node->i << endl;
-			inorder(node->right);
+			inOrder(node->right);
 		}
 	}
 };

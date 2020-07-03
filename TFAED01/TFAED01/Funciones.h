@@ -1,5 +1,55 @@
 #pragma once
 #include "CTabla.h"
+
+///Para filtraciones
+function<bool(string, string, string)> fx_primero;
+
+function<bool(string, string, string)>filtro_igual = [](string dato, string cmp, string type)
+{
+	if (type == "int") { return stoi(dato) == stoi(cmp); }
+	else if (type == "double") { return stof(dato) == stof(cmp); }
+	else { return dato == cmp; }
+};
+
+function<bool(string, string, string)>filtro_menor = [](string dato, string cmp, string type)
+{
+	if (type == "int") { return stoi(dato) < stoi(cmp); }
+	else if (type == "double") { return stof(dato) < stof(cmp); }
+	else { return dato < cmp; }
+};
+
+function<bool(string, string, string)>filtro_mayor = [](string dato, string cmp, string type) {
+	if (type == "int") { return stoi(dato) > stoi(cmp); }
+	else if (type == "double") { return stof(dato) > stof(cmp); }
+	else { return dato > cmp; }
+};
+
+function<bool(string, string, string)>filtro_contenido = [](string dato, string cmp, string type)
+{
+	size_t found = dato.find(cmp);
+	return found != string::npos;
+
+};
+
+function<bool(string, string, string)>filtro_nocontenido = [](string dato, string cmp, string type)
+{
+	size_t found = dato.find(cmp);
+	return found == string::npos;
+};
+
+function<bool(string, string, string)>filtro_inicia = [](string dato, string cmp, string type)
+{
+	size_t found = dato.find(cmp);
+	return found == 0;
+};
+
+function<bool(string, string, string)>filtro_finaliza = [](string dato, string cmp, string type)
+{
+	int found = dato.find(cmp);
+	return found == dato.size() - cmp.size();
+};
+
+///Para ordenamientos
 //para int's
 void maxheapify(vector<int>& arr, int n, int i, CTabla* taux)
 {

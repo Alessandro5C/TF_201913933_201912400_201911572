@@ -1,11 +1,9 @@
 #pragma once
 #include <iostream>
 #include <vector>
-//#include <utility>
 #include <string>
 
 using namespace std;
-//template <class T>
 class CCols
 {
 private:
@@ -15,6 +13,7 @@ private:
 public:
 	CCols(string name, string type)
 		: name(name), type(type) {}
+	CCols(string type) : type(type) {}
 	~CCols() {}
 
 	string getName() { return name; }
@@ -25,4 +24,6 @@ public:
 	void addDato(string dato) { data.push_back(dato); }
 	void setDato(int nfila, string dato) { data[nfila] = dato; }
 	bool findDato(int pos, string dato) { return data[pos] == dato; }
+
+	void setName(string name) { this->name = name; }
 };

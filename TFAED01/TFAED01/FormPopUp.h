@@ -475,7 +475,8 @@ namespace TFAED01 {
 		catch (Exception ^ex)
 		{
 			MessageBox::Show("Complete todos los cuadros faltantes." 
-				+ "\n*La ultima fila puede estar vacía.");
+				+ "\n*La ultima fila puede estar vacía.", "Atención",
+				MessageBoxButtons::OK, MessageBoxIcon::Warning);
 		}
 	}
 

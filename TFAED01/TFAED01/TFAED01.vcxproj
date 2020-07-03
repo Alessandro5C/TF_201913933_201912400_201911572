@@ -138,12 +138,12 @@
   <ItemGroup>
     <ClInclude Include="CArbol.h" />
     <ClInclude Include="CCols.h" />
+    <ClInclude Include="CSVRow.h" />
     <ClInclude Include="CTabla.h" />
-    <ClInclude Include="Filtros.h" />
     <ClInclude Include="FormPopUp.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="HeapSort.h" />
+    <ClInclude Include="Funciones.h" />
     <ClInclude Include="MenuPrincipal.h">
       <FileType>CppForm</FileType>
     </ClInclude>
