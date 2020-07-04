@@ -67,7 +67,7 @@ public:
 	CFila* addFila() {
 		CFila* aux = 
 			new CFila(f, this);
-		maprows[f++] = aux; //f++;
+		maprows[f++] = aux; 
 		return aux;
 	}
 

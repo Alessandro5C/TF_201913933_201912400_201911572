@@ -1,0 +1,15 @@
+Recomendaciones
+
+El Mini-SGBD también posee una funcionalidad para abrir archivos, 
+pero para evitar la mayor cantidad de errores estos deberán cumplir ciertos requisitos.
+
+*El formato es CSV (separado por comas ';').
+*La primera fila indica los tipos de datos de las columnas.
+*La segunda fila indica los nombres de las columnas.
+*Los nombres de las columnas deben ser diferentes y estar ubicados de menor a mayor guiándonos según el código ASCII.
+*Ninguna casilla que corresponda a una columna que soporta como tipo de dato a int o double debe estar vacía.
+
+Los archivos que se crearon con la función guardar del programa ya cumplen con las condiciones expuestas.
+
+Puede usar el archivo Ejemplo1_Formato_Lectura_de_archivos.csv ubicado en el github para probar, este es el estado de 
+cuenta anual de los puestos de un mercado.

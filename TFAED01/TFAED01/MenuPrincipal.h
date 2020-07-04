@@ -125,6 +125,7 @@ namespace TFAED01 {
 			string aux_nombre; int auxi;
 			dgvPrincipal->Rows->Add(); //Añade nueva fila
 			for (int i = 0; i < grup->getNfilas(); i++) {
+				dgvPrincipal->Rows[dgvPrincipal->RowCount - 1]->ReadOnly = true;
 				dgvPrincipal->Rows->Add(); //Añade nueva fila
 				for (int idxg = 0; idxg < grup->getNcols(); idxg++) {
 					MarshalString(dgvPrincipal->Columns[idxg]->HeaderText, aux_nombre);
